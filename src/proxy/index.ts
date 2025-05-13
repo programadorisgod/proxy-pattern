@@ -1,23 +1,44 @@
 import type { ThirdPartyDownloader } from "../interface/third-party-downloader.js";
 
+export interface CacheInfo {
+  url: string;
+  filename: string;
+  timestamp: number;
+}
+
 export class CachedInstagramDownloader implements ThirdPartyDownloader {
   private _isValidUser: boolean = false;
-  private _cache: Map<string, string> = new Map();
+  private _cache: Map<string, CacheInfo> = new Map();
+
   constructor(private readonly service: ThirdPartyDownloader) {}
 
-  async download(url: string): Promise<void> {
+  private normalizeUrl(url: string): string {
+    const normalizedUrl = (new URL(url).search = "");
+
+    return normalizedUrl.toString().trim();
+  }
+
+  async download(url: string): Promise<string | void> {
     if (!this._isValidUser) {
       return Promise.reject(new Error("User not valid"));
     }
 
-    if (this._cache.has(url)) {
-      console.log("File already downloaded");
-      return Promise.resolve();
+    const normalizedUrl = this.normalizeUrl(url);
+    console.log(`Is in cache: ${this._cache.has(normalizedUrl)}`);
+
+    if (this._cache.has(normalizedUrl)) {
+      console.log("File already downloaded from cache");
+      return Promise.resolve(this._cache.get(normalizedUrl)?.filename);
     }
 
-    this._cache.set(url, url);
     try {
-      await this.service.download(url);
+      const filename = (await this.service.download(url)) as string;
+      this._cache.set(normalizedUrl, {
+        url: normalizedUrl,
+        filename,
+        timestamp: Date.now(),
+      });
+      return filename;
     } catch (error) {
       console.log(error);
       return Promise.reject(new Error("Error downloading file"));
@@ -30,5 +51,10 @@ export class CachedInstagramDownloader implements ThirdPartyDownloader {
       return Promise.resolve();
     }
     return Promise.reject(new Error("Invalid credentials"));
+  }
+
+  isUrlCached(url: string): boolean {
+    const normalizedUrl = this.normalizeUrl(url);
+    return this._cache.has(normalizedUrl);
   }
 }

@@ -4,49 +4,45 @@ import { pipeline } from "node:stream/promises";
 import { createWriteStream } from "node:fs";
 
 export class InstagramThirdPartyDownloader implements ThirdPartyDownloader {
-  async download(url: string): Promise<void> {
+  async download(url: string): Promise<string | void> {
     try {
       const response = await fetch(
         `http://localhost:3000/api/video?postUrl=${url}`
       );
 
       if (!response.ok) {
-        return console.log("Error");
+        console.log("Error");
+        return;
       }
       const data = await response.json();
 
       if (data?.status !== "success") {
-        return console.log("Error getting post url");
+        console.log("Error getting post url");
+        return;
       }
 
       const { data: info } = data;
-      console.info(data, "data");
-
-      console.log(info);
-
-      console.log(info.videoUrl);
 
       const post = await fetch(info.videoUrl);
 
       if (!post.body) {
-        return console.warn("No body");
+        console.warn("No body");
+        return;
       }
-      console.log(post.body, "body");
 
       const arrayBuffer = await post.arrayBuffer();
-      console.log(arrayBuffer, "array buffer");
 
       const buffer = Buffer.from(arrayBuffer);
-
-      console.log(buffer, "buffer");
 
       const stream = Readable.from(buffer);
 
       await pipeline(stream, createWriteStream(info.filename));
 
       console.log("✅ File downloaded with exito");
+      return info.filename;
     } catch (error) {
       console.log(error);
+      return;
     }
   }
 }

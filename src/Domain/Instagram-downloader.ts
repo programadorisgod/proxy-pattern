@@ -3,9 +3,9 @@ import type { ThirdPartyDownloader } from "../interface/third-party-downloader.j
 export class InstagramManager {
   constructor(private readonly downloader: ThirdPartyDownloader) {}
 
-  async download(url: string): Promise<void> {
+  async download(url: string): Promise<string | void> {
     try {
-      await this.downloader.download(url);
+      return await this.downloader.download(url);
     } catch (error) {
       console.log(error);
     }
