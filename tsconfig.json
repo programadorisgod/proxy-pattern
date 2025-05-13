@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    /* Opciones base */
+    "esModuleInterop": true, //Para permitir la importación de módulos de CommonJS en ES6
+    "skipLibCheck": true, // Omitir la comprobación de librerías (.d.ts)
+    "target": "es2022", // Versión de ECMAScript a la que se compilará
+    "allowJs": true, // Permite que el compilador acepte archivos .js para facilitar la migración de JavaScript a TypeScript
+    "resolveJsonModule": true, //Permite importar archivos JSON directamente, generando tipados automáticamente
+    "moduleDetection": "force", // Detecta automáticamente el tipo de módulo a utilizar.
+    "isolatedModules": true, // Permite la compilación de archivos de forma independiente
+    "verbatimModuleSyntax": true, // Fuerza el uso de import type y export type para que el comportamiento sea más predecible
+
+    /* Estrictas */
+    "strict": true,
+    "noUncheckedIndexedAccess": true, // Evita que se acceda a propiedades de un objeto que puedan ser undefined
+    "noImplicitOverride": true, // Evita que se sobrescriban métodos sin usar la palabra clave override
+    "noImplicitAny": true, // Evita que se utilice el tipo any implícitamente
+    "noImplicitReturns": true, // Evita que se utilicen funciones que no devuelven un valor
+    "noFallthroughCasesInSwitch": true, // Evita que se utilicen casos de switch que no tengan un break
+
+    /* Si transpilas con TypeScript */
+    "module": "NodeNext", // Define el tipo de módulo a utilizar en este caso NodeNext que es para Node.js con soporte para ES Modules
+    "outDir": "dist",
+    "sourceMap": true, // Genera archivos .map para facilitar el debug
+
+    /* Si tu código se ejecuta en el DOM */
+    "lib": ["es2022", "dom", "dom.iterable"]
+  },
+    
+
+  "include": ["src/**/*.ts", "src/**/*.js"], // Archivos a incluir en la compilación
+  "exclude": ["node_modules", "**/*.spec.ts"] // Archivos a excluir de la compilación
+}
+
