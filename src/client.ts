@@ -1,7 +1,3 @@
-/**
- * Cliente de prueba para la API de descarga de Instagram
- */
-
 const url =
   "https://www.instagram.com/reel/DIAaQDSROho/?utm_source=ig_web_copy_link";
 const API_URL = "http://localhost:4000/api/download";
@@ -36,8 +32,8 @@ async function testDownload() {
     const data2 = await response2.json();
     console.log("📥 Respuesta 2:", JSON.stringify(data2, null, 2));
 
-       // Segunda solicitud - debería usar el caché
-    console.log("\n🔄 Segunda solicitud - Debería usar caché");
+    // Segunda solicitud - debería usar el caché
+    console.log("\n🔄 Tercera solicitud - Debería usar caché");
     const response3 = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -53,5 +49,4 @@ async function testDownload() {
   }
 }
 
-// Ejecutar prueba
 testDownload();
