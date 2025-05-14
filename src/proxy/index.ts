@@ -1,4 +1,7 @@
-import type { ThirdPartyDownloader } from "../interface/third-party-downloader.js";
+import type {
+  ThirdPartyDownloader,
+  ThirdPartyDownloaderResult,
+} from "../interface/third-party-downloader.js";
 
 export interface CacheInfo {
   url: string;
@@ -18,7 +21,7 @@ export class CachedInstagramDownloader implements ThirdPartyDownloader {
     return normalizedUrl.toString().trim();
   }
 
-  async download(url: string): Promise<string | void> {
+  async download(url: string): Promise<ThirdPartyDownloaderResult> {
     if (!this._isValidUser) {
       return Promise.reject(new Error("User not valid"));
     }
@@ -28,20 +31,48 @@ export class CachedInstagramDownloader implements ThirdPartyDownloader {
 
     if (this._cache.has(normalizedUrl)) {
       console.log("File already downloaded from cache");
-      return Promise.resolve(this._cache.get(normalizedUrl)?.filename);
+      const urlCached = this._cache.get(normalizedUrl)?.filename!;
+
+      return {
+        filename: urlCached,
+        isCached: true,
+        error: null,
+        success: true,
+      };
     }
 
     try {
-      const filename = (await this.service.download(url)) as string;
+      const data = await this.service.download(url);
+
+      if (!data.success) {
+        return {
+          filename: null,
+          isCached: false,
+          error: data.error,
+          success: true,
+        };
+      }
+
       this._cache.set(normalizedUrl, {
         url: normalizedUrl,
-        filename,
+        filename: data.filename!,
         timestamp: Date.now(),
       });
-      return filename;
+
+      return {
+        filename: data.filename,
+        isCached: false,
+        error: null,
+        success: true,
+      };
     } catch (error) {
       console.log(error);
-      return Promise.reject(new Error("Error downloading file"));
+      return {
+        filename: null,
+        isCached: false,
+        error: null,
+        success: true,
+      };
     }
   }
 
@@ -51,10 +82,5 @@ export class CachedInstagramDownloader implements ThirdPartyDownloader {
       return Promise.resolve();
     }
     return Promise.reject(new Error("Invalid credentials"));
-  }
-
-  isUrlCached(url: string): boolean {
-    const normalizedUrl = this.normalizeUrl(url);
-    return this._cache.has(normalizedUrl);
   }
 }

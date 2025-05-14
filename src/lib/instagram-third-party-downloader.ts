@@ -1,24 +1,34 @@
 import { Readable } from "node:stream";
-import type { ThirdPartyDownloader } from "../interface/third-party-downloader.js";
+import type {
+  ThirdPartyDownloader,
+  ThirdPartyDownloaderResult,
+} from "../interface/third-party-downloader.js";
 import { pipeline } from "node:stream/promises";
 import { createWriteStream } from "node:fs";
+import path from "node:path";
 
 export class InstagramThirdPartyDownloader implements ThirdPartyDownloader {
-  async download(url: string): Promise<string | void> {
+  async download(url: string): Promise<ThirdPartyDownloaderResult> {
+    const result: ThirdPartyDownloaderResult = {
+      success: false,
+      isCached: false,
+      filename: null,
+      error: null,
+    };
+
     try {
       const response = await fetch(
         `http://localhost:3000/api/video?postUrl=${url}`
       );
 
       if (!response.ok) {
-        console.log("Error");
-        return;
+        return result;
       }
       const data = await response.json();
 
       if (data?.status !== "success") {
         console.log("Error getting post url");
-        return;
+        return { ...result, error: "Error getting post url" };
       }
 
       const { data: info } = data;
@@ -27,7 +37,8 @@ export class InstagramThirdPartyDownloader implements ThirdPartyDownloader {
 
       if (!post.body) {
         console.warn("No body");
-        return;
+
+        return { ...result, error: "Error getting body" };
       }
 
       const arrayBuffer = await post.arrayBuffer();
@@ -35,14 +46,18 @@ export class InstagramThirdPartyDownloader implements ThirdPartyDownloader {
       const buffer = Buffer.from(arrayBuffer);
 
       const stream = Readable.from(buffer);
-
-      await pipeline(stream, createWriteStream(info.filename));
+      const pathFile = path.join(process.cwd(), "videos", info.filename);
+      await pipeline(stream, createWriteStream(pathFile));
 
       console.log("✅ File downloaded with exito");
-      return info.filename;
+      console.log(pathFile, "INSTAGRAM");
+
+      result.filename = info.filename;
+      result.success = true;
+      return result;
     } catch (error) {
       console.log(error);
-      return;
+      return { ...result, error: "Error in download" };
     }
   }
 }
