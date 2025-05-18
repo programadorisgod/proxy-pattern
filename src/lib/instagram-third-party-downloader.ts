@@ -18,7 +18,7 @@ export class InstagramThirdPartyDownloader implements ThirdPartyDownloader {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/video?postUrl=${url}`
+        `https://downloader-ig.vercel.app/api/video?postUrl=${url}`
       );
 
       if (!response.ok) {
